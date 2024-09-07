@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Quiz.WebUI;
 using Quiz.WebUI.Context;
+using Quiz.WebUI.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,15 +10,15 @@ builder.Services.AddControllersWithViews();
 
 // SignalR'ý ekliyoruz
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<MyBackgroundService>();
 
 // Veritabaný baðlantýsýný ekliyoruz
 builder.Services.AddDbContext<QuizContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var app = builder.Build();
 
-//app.BackgroundService<StatusUpdateService>();
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
