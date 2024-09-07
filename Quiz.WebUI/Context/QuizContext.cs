@@ -16,6 +16,7 @@ namespace Quiz.WebUI.Context
 
         public DbSet<Oturum> Oturums { get; set; }
         public DbSet<Contestant> Contestants { get; set; }
+        public DbSet<QuizSession> QuizSessions { get; set; }
   
         public DbSet<Questions> Questions { get; set; }
     }

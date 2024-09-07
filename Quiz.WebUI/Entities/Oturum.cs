@@ -10,7 +10,7 @@
         // Yarışmacı Sayısı
         public int CompetitorsNumber { get; set; }
 
-
+        public int Status { get; set; }
 
 
         public DateTime Date { get; set; }
