@@ -10,12 +10,12 @@ builder.Services.AddControllersWithViews();
 
 // SignalR'ý ekliyoruz
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<MyBackgroundService>();
 
 // Veritabaný baðlantýsýný ekliyoruz
 builder.Services.AddDbContext<QuizContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddHostedService<BackgroundService>();
 
 var app = builder.Build();
 
