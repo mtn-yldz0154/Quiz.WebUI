@@ -1,5 +1,3 @@
-using Hangfire;
-using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Quiz.WebUI;
 using Quiz.WebUI.Context;
@@ -17,18 +15,9 @@ builder.Services.AddSignalR();
 builder.Services.AddDbContext<QuizContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
-
-//builder.Services.AddHangfire(configuration => configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"))); // Hangfire için veritabaný baðlantýsý
-
-// builder.Services.AddHangfireServer();
-//builder.Services.AddHttpClient();
-builder.Services.AddHostedService<MyBackgroundService>();
+builder.Services.AddHostedService<BackgroundService>();
 
 var app = builder.Build();
-//app.UseHangfireDashboard(); // Hangfire arayüzüne eriþim için
-//app.UseHangfireServer();
-//RecurringJob.AddOrUpdate<StatusUpdateService>(x => x.VerileriGuncelleAsync(null), Cron.MinuteInterval(1));
-//app.BackgroundService<StatusUpdateService>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
