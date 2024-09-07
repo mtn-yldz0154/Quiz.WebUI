@@ -1,0 +1,179 @@
+﻿@{
+    Layout = null;
+}
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+<link rel="stylesheet" href="~/css/style.css">
+
+<div class="btn_start">
+    <button class="btn btn-warning btn-lg">Quize Başla</button>
+</div>
+
+<div class="card quiz_box">
+    <header class="card-header">
+        <div class="title">Quiz App</div>
+        <div class="timer">
+            <div class="time_text">Kalan Süre</div>
+            <div class="time_second">10</div>
+        </div>
+        <div class="time_line"></div>
+    </header>
+    <section class="card-body">
+        <div class="question_text"></div>
+        <div class="option_list"></div>
+    </section>
+    <footer class="card-footer">
+        <div class="question_index"></div>
+        <button class="next_btn btn btn-primary btn-sm">Sonraki Soru</button>
+    </footer>
+</div>
+
+<div class="card score_box">
+    <div class="icon"><i class="fas fa-crown"></i></div>
+    <div class="score_text"></div>
+    <div class="buttons">
+        <button style="display:none" class="btn btn-primary btn_replay">Tekrar Başlat</button>
+        <button id="btn_quit" class="btn btn-primary btn_quit">Testi Bitir</button>
+    </div>
+</div>
+
+<script>
+    window.onload = getQuestions;
+    var correctAnswersCount = 0;
+
+    function Soru(soruMetni, cevapSecenekleri, dogruCevap) {
+        this.soruMetni = soruMetni;
+        this.cevapSecenekleri = cevapSecenekleri;
+        this.dogruCevap = dogruCevap;
+    }
+
+    Soru.prototype.cevabiKontrolEt = function (cevap) {
+        return cevap === this.dogruCevap
+    }
+
+    let sorular = [];
+
+    function getQuestions() {
+        fetch('/admin/GetQuestionList', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                var i = 1;
+                sorular = data.map(question => {
+                    sorular.push(new Soru(i + "-" + question.question, { a: question.option1, b: question.option2, c: question.option3, d: question.option4 }, question.correctOption));
+                    i++;
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching questions:', error);
+            });
+    }
+
+    document.getElementById("btn_quit").addEventListener("click", function () {
+        const name = "@ViewBag.Name";
+        const skor = correctAnswersCount;
+
+        fetch('/quiz/FinishQuiz', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ name: name, skor: skor })
+        })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = "/quiz/index";
+                } else {
+                    alert("Quiz bitirilemedi!");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    });
+
+    function UI() {
+        this.btn_start = document.querySelector(".btn_start");
+        this.btn_next = document.querySelector(".next_btn");
+        this.btn_replay = document.querySelector(".btn_replay");
+        this.btn_quit = document.querySelector(".btn_quit");
+        this.quiz_box = document.querySelector(".quiz_box");
+        this.score_box = document.querySelector(".score_box");
+        this.option_list = document.querySelector(".option_list");
+        this.correctIcon = '<div class="icon"><i class="fas fa-check"></i></div>';
+        this.incorrectIcon = '<div class="icon"><i class="fas fa-times"></i></div>';
+        this.time_text = document.querySelector(".time_text");
+        this.time_second = document.querySelector(".time_second");
+        this.time_line = document.querySelector(".time_line");
+    }
+
+    UI.prototype.soruGoster = function (soru) {
+        let question = `<span>${soru.soruMetni}</span>`;
+        let options = '';
+
+        for (let cevap in soru.cevapSecenekleri) {
+            options += `<div class="option"><span><b>${cevap}</b>: ${soru.cevapSecenekleri[cevap]}</span></div>`;
+        }
+
+        document.querySelector(".question_text").innerHTML = question;
+        this.option_list.innerHTML = options;
+
+        const option = this.option_list.querySelectorAll(".option");
+
+        for (let opt of option) {
+            opt.setAttribute("onclick", "optionSelected(this)")
+        }
+    };
+
+    UI.prototype.soruSayisiniGoster = function (soruSirasi, toplamSoru) {
+        let tag = `<span class="badge bg-warning">${soruSirasi} / ${toplamSoru}</span>`;
+        document.querySelector(".quiz_box .question_index").innerHTML = tag;
+    };
+
+    UI.prototype.skoruGoster = function (toplamSoru, dogruCevap) {
+        let tag = `Toplam ${toplamSoru} sorudan ${dogruCevap} doğru cevap verdiniz.`;
+        document.querySelector(".score_box .score_text").innerHTML = tag;
+        correctAnswersCount = dogruCevap;
+    };
+</script>
+
+<script src="~/js/quiz.js"></script>
+<script src="~/js/script.js"></script>
+
+<style>
+    /* Arka plan resmi eklenmesi */
+    body {
+        background-image: url('https://t4.ftcdn.net/jpg/03/45/88/07/360_F_345880772_zIT2mkdCzTthplO7xqaGGrMspN0jw0ll.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    /* Kart stili */
+    .card {
+        background-color: rgba(255, 255, 255, 0.8); /* Şeffaf arka plan */
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn_start {
+        margin-bottom: 20px;
+    }
+
+    .quiz_box, .score_box {
+        width: 100%;
+        max-width: 600px;
+    }
+</style>

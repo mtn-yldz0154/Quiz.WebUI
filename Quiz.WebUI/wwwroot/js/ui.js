@@ -1,3 +1,6 @@
+
+
+
 function UI() {
     this.btn_start = document.querySelector(".btn_start"),
     this.btn_next = document.querySelector(".next_btn"),
@@ -40,7 +43,11 @@ UI.prototype.soruSayisiniGoster = function(soruSirasi, toplamSoru) {
     document.querySelector(".quiz_box .question_index").innerHTML = tag;
 }
 
-UI.prototype.skoruGoster = function(toplamSoru, dogruCevap) {
+UI.prototype.skoruGoster = function (toplamSoru, dogruCevap) {
+
     let tag = `Toplam ${toplamSoru} sorudan ${dogruCevap} doğru cevap verdiniz.`;
     document.querySelector(".score_box .score_text").innerHTML = tag;
+
+    
+
 }

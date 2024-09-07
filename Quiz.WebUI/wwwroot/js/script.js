@@ -3,7 +3,7 @@ const ui = new UI();
 
 ui.btn_start.addEventListener("click", function() {
     ui.quiz_box.classList.add("active");
-    startTimer(10);
+    startTimer(15);
     startTimerLine();
     ui.soruGoster(quiz.soruGetir());
     ui.soruSayisiniGoster(quiz.soruIndex + 1, quiz.sorular.length);
@@ -29,9 +29,7 @@ ui.btn_next.addEventListener("click", function() {
     }
 });
 
-ui.btn_quit.addEventListener("click", function() {
-    window.location.reload();
-});
+
 
 ui.btn_replay.addEventListener("click", function() {
     quiz.soruIndex = 0;
