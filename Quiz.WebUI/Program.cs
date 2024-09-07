@@ -16,6 +16,10 @@ builder.Services.AddHostedService<MyBackgroundService>();
 builder.Services.AddDbContext<QuizContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+<<<<<<< HEAD
+=======
+builder.Services.AddHostedService<BackgroundService>();
+>>>>>>> 4125a3f341af9df153409b9919ce1d250e8b72f2
 
 var app = builder.Build();
 
