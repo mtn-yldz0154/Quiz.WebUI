@@ -1,7 +1,7 @@
 const quiz = new Quiz(sorular);
 const ui = new UI();
 
-ui.btn_start.addEventListener("click", function() {
+ui.btn_start.addEventListener("click", function () {
     ui.quiz_box.classList.add("active");
     startTimer(15);
     startTimerLine();
@@ -9,7 +9,6 @@ ui.btn_start.addEventListener("click", function() {
     ui.soruSayisiniGoster(quiz.soruIndex + 1, quiz.sorular.length);
     ui.btn_next.classList.remove("show");
 });
-
 ui.btn_next.addEventListener("click", function() {
     if (quiz.sorular.length != quiz.soruIndex + 1) {
         quiz.soruIndex += 1;

@@ -99,13 +99,13 @@ namespace Quiz.WebUI.Controllers
             var session = await _quizContext.QuizSessions.FirstOrDefaultAsync();
             if (session == null)
             {
-                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddMinutes(1) };
+                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddSeconds(5) };
                 _quizContext.QuizSessions.Add(session);
                 await _quizContext.SaveChangesAsync();
             }
             else
             {
-                session.QuizStartTime = DateTime.Now.AddMinutes(1);
+                session.QuizStartTime = DateTime.Now.AddSeconds(5);
                 _quizContext.QuizSessions.Update(session);
                 await _quizContext.SaveChangesAsync();
             }

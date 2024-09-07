@@ -22,11 +22,11 @@ namespace Quiz.WebUI.Controllers
         }
 
 
-        public IActionResult StartQuiz(string name)
+        public IActionResult StartQuiz()
         {
-            ViewBag.Name = name;    
 
-            return View();
+
+            return PartialView("StartQuiz");
 
         }
 
