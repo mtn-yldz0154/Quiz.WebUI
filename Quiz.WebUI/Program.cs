@@ -17,17 +17,22 @@ builder.Services.AddSignalR();
 builder.Services.AddDbContext<QuizContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+<<<<<<< HEAD
 
 //builder.Services.AddHangfire(configuration => configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"))); // Hangfire için veritabaný baðlantýsý
 
 // builder.Services.AddHangfireServer();
 //builder.Services.AddHttpClient();
 builder.Services.AddHostedService<MyBackgroundService>();
+=======
+>>>>>>> f9a9dc84fbf9a14916bf01da97060e5a3761507a
 
 var app = builder.Build();
 //app.UseHangfireDashboard(); // Hangfire arayüzüne eriþim için
 //app.UseHangfireServer();
 //RecurringJob.AddOrUpdate<StatusUpdateService>(x => x.VerileriGuncelleAsync(null), Cron.MinuteInterval(1));
+//app.BackgroundService<StatusUpdateService>();
+
 //app.BackgroundService<StatusUpdateService>();
 
 // Configure the HTTP request pipeline.
