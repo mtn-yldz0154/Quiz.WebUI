@@ -22,13 +22,17 @@ namespace Quiz.WebUI.Controllers
         }
 
 
-        public IActionResult StartQuiz()
+        public IActionResult StartQuiz(string token)
         {
-
+            ViewBag.Token = token;
 
             return PartialView("StartQuiz");
 
         }
+
+
+        
+
 
         [HttpPost]
         public IActionResult FinishQuiz([FromBody] QuizResultModel model)
@@ -54,9 +58,25 @@ namespace Quiz.WebUI.Controllers
             _quizContext.Contestants.Add(contestant);
             _quizContext.SaveChanges();
 
-            return RedirectToAction("Index");
+            return Ok(contestant.Token);
         }
 
 
+        [HttpPost]
+        public IActionResult UpdateQuiz([FromBody] QuizResultModel model)
+        {
+           
+
+            var contestant = _quizContext.Contestants.Where(i => i.Token == model.Token).FirstOrDefault();
+            contestant.Skor += model.Skor;
+
+            _quizContext.Contestants.Update(contestant);
+            _quizContext.SaveChanges();
+
+            var contestantList=_quizContext.Contestants.Where(i=>i.OturumId==contestant.OturumId).ToList();
+
+
+            return Json(contestantList);
+        }
     }
 }

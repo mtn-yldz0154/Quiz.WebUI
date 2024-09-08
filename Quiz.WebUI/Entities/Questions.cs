@@ -12,6 +12,8 @@
         public string Option4 { get; set; }
         public string CorrectOption { get; set; }
 
+        public int Second { get; set; }
+        public int Puan { get; set; }
         public EnumQuestionType QuestionType { get; set; }
      
 

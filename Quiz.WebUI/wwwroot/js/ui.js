@@ -16,7 +16,8 @@ function UI() {
     this.time_line = document.querySelector(".time_line")
 }
 
-UI.prototype.soruGoster = function(soru) {
+UI.prototype.soruGoster = function (soru) {
+    
     let question = `<span>${soru.soruMetni}</span>`;
     let options = '';
 

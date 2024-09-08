@@ -195,6 +195,16 @@
         </div>
 
         <div class="form-group">
+            <label for="soruSuresi">Soru Süresi(sn):</label>
+            <input type="text" id="soruSuresi" name="Second" class="form-control" placeholder="Soru Süresi" required />
+        </div>
+
+        <div class="form-group">
+            <label for="puan">Soru Puanı:</label>
+            <input type="text" id="puan" name="Puan" class="form-control" placeholder="SoruPuanı" required />
+        </div>
+
+        <div class="form-group">
             <button type="button" class="btn-submit" onclick="addQuestion()">Soru Ekle</button>
         </div>
     </div>
@@ -218,7 +228,9 @@
             Option2: document.getElementById('Option2').value,
             Option3: document.getElementById('Option3').value,
             Option4: document.getElementById('Option4').value,
-            CorrectOption: document.getElementById('CorrectOption').value
+            CorrectOption: document.getElementById('CorrectOption').value,
+            Second:document.getElementById('soruSuresi').value,
+            Puan:document.getElementById('puan').value
         };
 
         fetch('/admin/AddQuestion', {

@@ -27,7 +27,9 @@
                         <th>C Şıkkı</th>
                         <th>D Şıkkı</th>
                         <th>Doğru Cevap</th>
-                        <th>Actions</th> <!-- Action butonları için ek sütun -->
+                        <th>Soru Süresi</th>
+                        <th>Soru Puanı</th>
+                        <th>İşlemler</th> <!-- Action butonları için ek sütun -->
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +43,8 @@
                             <td>@item.Option3</td>
                             <td>@item.Option4</td>
                             <td>@item.CorrectOption</td>
+                            <td>@item.Second</td>
+                            <td>@item.Puan</td>
                             <td>
                                 <a asp-action="EditQuestion" asp-controller="Admin" asp-route-id="@item.Id" class="text-warning" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Düzenle" data-bs-original-title="Edit info" aria-label="Edit"><i class="bi bi-pencil-fill"></i></a>
                                 <a onclick="confirmSil('Admin','DeleteQuestion','@item.Id')" class="text-danger" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Sil" data-bs-original-title="Delete" aria-label="Delete"><i class="bi bi-trash-fill"></i></a>

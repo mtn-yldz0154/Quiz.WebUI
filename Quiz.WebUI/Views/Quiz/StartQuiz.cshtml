@@ -35,10 +35,57 @@
         width: 100%;
         max-width: 600px;
     }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
 </style>
 
 
-
+<div id="resultModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+        <h2>Quiz Sonuçları</h2>
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>İsim</th>
+                    <th>Skor</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 
 
 <div style="display:none"  class="btn_start">
@@ -60,7 +107,7 @@
     </section>
     <footer class="card-footer">
         <div class="question_index"></div>
-        <button class="next_btn btn btn-primary btn-sm">Sonraki Soru</button>
+        <button id="next_btn" class="next_btn btn btn-primary btn-sm">Sonraki Soru</button>
     </footer>
 </div>
 
@@ -74,15 +121,22 @@
 </div>
 
 <script>
-    
+    var genelToplamCevap = 0;
+    var GecenSure = 0;
+    let saniye = 0;
+    let Sorusuresi = 0;
+    let SoruPuani = 0;
+  
     window.onload = getQuestions;
     var correctAnswersCount = 0;
 
  
-    function Soru(soruMetni, cevapSecenekleri, dogruCevap) {
+    function Soru(soruMetni, cevapSecenekleri, dogruCevap,second,puan) {
         this.soruMetni = soruMetni;
         this.cevapSecenekleri = cevapSecenekleri;
         this.dogruCevap = dogruCevap;
+        this.second = second;
+        this.puan = puan;
     }
 
     Soru.prototype.cevabiKontrolEt = function (cevap) {
@@ -102,9 +156,10 @@
             .then(data => {
                 var i = 1;
                 sorular = data.map(question => {
-                    sorular.push(new Soru(i + "-" + question.question, { a: question.option1, b: question.option2, c: question.option3, d: question.option4 }, question.correctOption));
+                    sorular.push(new Soru(i + "-" + question.question, { a: question.option1, b: question.option2, c: question.option3, d: question.option4 }, question.correctOption,question.second,question.puan));
                     i++;
                 });
+            
                 StartQuiz();
             })
             .catch(error => {
@@ -151,7 +206,10 @@
         this.time_line = document.querySelector(".time_line");
     }
 
+
+
     UI.prototype.soruGoster = function (soru) {
+        
         let question = `<span>${soru.soruMetni}</span>`;
         let options = '';
 
@@ -179,6 +237,78 @@
         document.querySelector(".score_box .score_text").innerHTML = tag;
         correctAnswersCount = dogruCevap;
     };
+
+    document.getElementById("next_btn").addEventListener("click", function () {
+
+        const skor = correctAnswersCount;
+        const token = "@ViewBag.Token";
+        
+        let bodyData = {
+            token: token,
+            skor: quiz.dogruCevapSayisi === 0 ? 0 : (saniye * SoruPuani) / Sorusuresi
+        };
+
+        fetch('/quiz/UpdateQuiz', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(bodyData)
+           
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();  // JSON formatında çözümle
+                } else {
+                    throw new Error("Quiz güncellenemedi!");
+                }
+            })
+            .then(contestantList => {
+                quiz.dogruCevapSayisi = 0;
+
+                // Modal'ı göster
+                const modal = document.getElementById('resultModal');
+                modal.style.display = "block";
+
+                // Yarışmacı listesini tabloya ekleyin
+                const tableBody = document.querySelector('#resultTable tbody');
+                tableBody.innerHTML = '';  // Eski sonuçları temizleyin
+                contestantList.forEach(contestant => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${contestant.name}</td><td>${contestant.skor}</td>`;
+                    tableBody.appendChild(row);
+                });
+
+                // 10 saniye sonra modalı kapatın ve diğer soruya geçin
+                setTimeout(() => {
+                    modal.style.display = "none";  // Modalı kapat
+                    document.querySelector(".time_text").textContent = "Kalan Süre";
+                    if (quiz.sorular.length != quiz.soruIndex + 1) {
+                        SoruPuani = quiz.soruGetir().puan;
+                        quiz.soruIndex += 1;
+                        clearInterval(counter);
+                        clearInterval(counterLine);
+                        startTimer(quiz.soruGetir().second)
+                        startTimerLine();
+                        ui.soruGoster(quiz.soruGetir());
+                        ui.soruSayisiniGoster(quiz.soruIndex + 1, quiz.sorular.length);
+                        ui.btn_next.classList.remove("show");
+                    } else {
+                        clearInterval(counter);
+                        clearInterval(counterLine);
+                        ui.quiz_box.classList.remove("active");
+                        ui.score_box.classList.add("active");
+                        ui.skoruGoster(quiz.sorular.length, quiz.dogruCevapSayisi);
+                    }
+                }, 5000);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        
+    });
+
 
    function StartQuiz(){
         document.getElementById("btn_start").click()

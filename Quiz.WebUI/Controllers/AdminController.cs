@@ -41,6 +41,8 @@ namespace Quiz.WebUI.Controllers
                 Option4 = model.Option4,
                 CorrectOption = model.CorrectOption,
                 Question = model.Question,
+                Second=model.Second,
+                Puan=model.Puan,
                QuestionType=EnumQuestionType.choice
             };
 
@@ -99,7 +101,7 @@ namespace Quiz.WebUI.Controllers
             var session = await _quizContext.QuizSessions.FirstOrDefaultAsync();
             if (session == null)
             {
-                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddSeconds(5) };
+                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddSeconds(10) };
                 _quizContext.QuizSessions.Add(session);
                 await _quizContext.SaveChangesAsync();
             }

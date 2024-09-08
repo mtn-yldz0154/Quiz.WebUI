@@ -101,7 +101,6 @@
         
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
-
     <script>
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/quizHub")  // SignalR hub endpoint
@@ -114,24 +113,89 @@
             // Sayıyı tamsayıya yuvarla
             seconds = Math.floor(seconds);
 
+            // İsim girişi input ve buton ekle
+            const nameInputDiv = document.createElement("div");
+            nameInputDiv.style.marginTop = "20px";
+
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.placeholder = "İsminizi girin";
+            nameInput.style.padding = "10px";
+            nameInput.style.fontSize = "1.2rem";
+            nameInputDiv.appendChild(nameInput);
+
+          
+
             // Geri sayım öğesini oluştur
             const countdownElement = document.createElement("div");
             countdownElement.id = "countdown";
             countdownElement.style.fontSize = "2rem";
             countdownElement.style.color = "white";
             countdownElement.style.marginTop = "20px";
+
+            // Sayfa içine ekle
+            document.querySelector(".container").appendChild(nameInputDiv);
             document.querySelector(".container").appendChild(countdownElement);
 
+            // Geri sayım başlat
             countdownInterval = setInterval(() => {
                 seconds--;
-               
+
                 countdownElement.innerText = `Quiz başlamasına ${seconds} saniye kaldı...`;
 
                 if (seconds <= 0) {
                     clearInterval(countdownInterval);
-                    window.location.href = "/Quiz/StartQuiz";
+                    const userName = nameInput.value.trim();  // Kullanıcı adını al
+
+                    if (userName === "") {
+                        alert("Lütfen isminizi girin!");  // Eğer kullanıcı ismini girmediyse uyarı göster
+                        return;
+                    }
+                    const name = userName;
+                    const skor = 0;
+
+                  
+
+                    fetch('/quiz/FinishQuiz', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ name: name, skor: skor })
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();  // Token'ı text olarak al
+                            } else {
+                                throw new Error("Hata!");
+                            }
+                        })
+                        .then(token => {
+                            console.log("Received Token:", token);
+
+                            window.location.href = `/Quiz/StartQuiz?token=${encodeURIComponent(token)}`;// Token'ı konsola yazdır
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                        });
+                   
                 }
             }, 1000);
+
+            // Başla butonu tıklandığında geri sayımı durdur ve quiz başlasın
+            startButton.addEventListener("click", () => {
+                clearInterval(countdownInterval);
+                const userName = nameInput.value.trim();  // Kullanıcı adını al
+
+                if (userName === "") {
+                    alert("Lütfen isminizi girin!");  // Eğer kullanıcı ismini girmediyse uyarı göster
+                    return;
+                }
+
+                // Kullanıcı adı ile birlikte yönlendirme yap
+                window.location.href = `/Quiz/StartQuiz?name=${encodeURIComponent(userName)}`;
+            });
         }
 
         // Sayfa yüklendiğinde geri sayım veya bekleme mesajını göstermek için kontrol yapma
@@ -148,11 +212,11 @@
                         startCountdown(countdownTime);
                     } else {
                         document.querySelector(".container").innerHTML = `
-                                <div class="alert">
-                                    <i style="margin-right:20px" class="fas fa-hourglass-half"></i>
-                                    Yöneticinin quizi başlatmasını bekleyin.
-                                </div>
-                            `;
+                                    <div class="alert">
+                                        <i style="margin-right:20px" class="fas fa-hourglass-half"></i>
+                                        Yöneticinin quizi başlatmasını bekleyin.
+                                    </div>
+                                `;
                     }
                 })
                 .catch(error => console.error('Error fetching countdown:', error));
@@ -177,6 +241,7 @@
         // Sayfa yüklendiğinde geri sayımı başlat veya bekleme mesajını göster
         initializePage();
     </script>
+
 
 
 

@@ -28,7 +28,7 @@ namespace Quiz.WebUI.Helpers
             {
                 await UpdateQuiz();
                 _logger.LogInformation("Running background task at: {time}", DateTimeOffset.Now);
-                await Task.Delay(5000, stoppingToken);  
+                await Task.Delay(1000, stoppingToken);  
             }
         }
 
@@ -47,7 +47,7 @@ namespace Quiz.WebUI.Helpers
                     {
                         var elapsedTime = DateTime.Now - oturum.Date; 
 
-                        if (elapsedTime > TimeSpan.FromMinutes(5))
+                        if (elapsedTime > TimeSpan.FromMinutes(1))
                         {
                             oturum.Status = 0;
                             _logger.LogInformation("Oturum {id} has been set to inactive due to timeout.", oturum.Id);
