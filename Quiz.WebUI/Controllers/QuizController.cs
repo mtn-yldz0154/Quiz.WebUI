@@ -2,6 +2,7 @@
 using Quiz.WebUI.Context;
 using Quiz.WebUI.Entities;
 using Quiz.WebUI.Models;
+using System.Reflection.Metadata;
 
 namespace Quiz.WebUI.Controllers
 {
@@ -22,9 +23,17 @@ namespace Quiz.WebUI.Controllers
         }
 
 
-        public IActionResult StartQuiz(string token)
+        public IActionResult StartQuiz(string id)
         {
-            ViewBag.Token = token;
+            var oturum=_quizContext.Oturums.Where(i=>i.Status==1).FirstOrDefault();
+
+            if(oturum==null)
+            {
+               return RedirectToAction("Index");
+
+            }
+
+            ViewBag.Token = id;
 
             return PartialView("StartQuiz");
 
@@ -44,6 +53,13 @@ namespace Quiz.WebUI.Controllers
             if (oturum == null)
             {
                 return BadRequest("Aktif oturum bulunamadı.");
+            }
+
+            if (model.Name=="")
+            {
+                Random random = new Random();
+                int randomNumber = random.Next(100000, 999999); // Generates a 6-digit random number
+                model.Name = "Guest_" + randomNumber;
             }
 
             var contestant = new Contestant()
@@ -73,9 +89,14 @@ namespace Quiz.WebUI.Controllers
             _quizContext.Contestants.Update(contestant);
             _quizContext.SaveChanges();
 
-            var contestantList=_quizContext.Contestants.Where(i=>i.OturumId==contestant.OturumId).ToList();
+            return Ok();
+        }
 
 
+        public IActionResult ResultQuiz(string id)
+        {
+            var contestant = _quizContext.Contestants.Where(i => i.Token == id).FirstOrDefault();
+            var contestantList = _quizContext.Contestants.Where(i => i.OturumId == contestant.OturumId).OrderByDescending(i=>i.Skor).ToList();
             return Json(contestantList);
         }
     }

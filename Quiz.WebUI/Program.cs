@@ -34,10 +34,16 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+app.MapControllerRoute(
+    name: "startquiz",
+    pattern: "quiz",
+    defaults: new { controller = "Quiz", action = "StartQuiz" }
+);
+
 // Default route ayarý
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Admin}/{action=Index}/{id?}");
+    pattern: "{controller=Quiz}/{action=Index}/{id?}");
 
 // SignalR Hub endpoint'ini burada tanýmlýyoruz
 app.MapHub<QuizHub>("/quizHub");  // "/quizHub" SignalR için URL'yi temsil ediyor

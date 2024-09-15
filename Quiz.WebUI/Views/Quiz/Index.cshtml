@@ -94,10 +94,6 @@
     </div>
     <div class="container quiz">
        
-           
-      
-        
-            
         
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
@@ -112,6 +108,14 @@
         function startCountdown(seconds) {
             // Sayıyı tamsayıya yuvarla
             seconds = Math.floor(seconds);
+
+
+            document.querySelector(".container").innerHTML = `
+                                            <div class="alert">
+                                                <i style="margin-right:20px" class="fas fa-hourglass-half"></i>
+                                                Quiz başlıyor! Lütfen isminizi girin.
+                                            </div>
+                                        `;
 
             // İsim girişi input ve buton ekle
             const nameInputDiv = document.createElement("div");
@@ -147,14 +151,11 @@
                     clearInterval(countdownInterval);
                     const userName = nameInput.value.trim();  // Kullanıcı adını al
 
-                    if (userName === "") {
-                        alert("Lütfen isminizi girin!");  // Eğer kullanıcı ismini girmediyse uyarı göster
-                        return;
-                    }
+                    
                     const name = userName;
                     const skor = 0;
 
-                  
+                    
 
                     fetch('/quiz/FinishQuiz', {
                         method: 'POST',
@@ -174,7 +175,7 @@
                         .then(token => {
                             console.log("Received Token:", token);
 
-                            window.location.href = `/Quiz/StartQuiz?token=${encodeURIComponent(token)}`;// Token'ı konsola yazdır
+                            window.location.href = `/Quiz/StartQuiz?id=${encodeURIComponent(token)}`;// Token'ı konsola yazdır
                         })
                         .catch(error => {
                             console.error("Error:", error);

@@ -47,7 +47,7 @@ namespace Quiz.WebUI.Helpers
                     {
                         var elapsedTime = DateTime.Now - oturum.Date; 
 
-                        if (elapsedTime > TimeSpan.FromMinutes(1))
+                        if (elapsedTime > TimeSpan.FromMinutes(oturum.Munite+1))
                         {
                             oturum.Status = 0;
                             _logger.LogInformation("Oturum {id} has been set to inactive due to timeout.", oturum.Id);

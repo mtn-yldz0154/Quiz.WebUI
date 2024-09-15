@@ -12,7 +12,7 @@
 
         public int Status { get; set; }
 
-
+        public int Munite {  get; set; }
         public DateTime Date { get; set; }
         public List<Contestant> Contestants { get; set; }
     }

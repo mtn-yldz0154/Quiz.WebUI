@@ -11,8 +11,10 @@
 <div class="container d-flex justify-content-center align-items-center vh-100">
     @if (ViewBag.Oturum == 0)
     {
+        <input type="number" id="minute" name="minute" placeholder="Süreyi giriniz" />
+
         <div class="text-center">
-            <a href="/admin/ManageQuiz" class="btn btn-success btn-lg">Quiz Başlat</a>
+            <a href="/admin/ManageQuiz" id="startQuiz" class="btn btn-success btn-lg" onclick="setQuizTime()">Quiz Başlat</a>
         </div>
     }
     else if (ViewBag.Oturum == 1)
@@ -22,3 +24,18 @@
         </div>
     }
 </div>
+
+<script>
+    function setQuizTime() {
+        // Get the value from the input field
+        var minuteValue = document.getElementById("minute").value;
+
+        // Get the link element
+        var quizLink = document.getElementById("startQuiz");
+
+        // If the input is not empty, append the minute as a query parameter
+        if (minuteValue) {
+            quizLink.href = "/admin/ManageQuiz?minute=" + minuteValue;
+        }
+    }
+</script>

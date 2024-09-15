@@ -8,7 +8,7 @@ ui.btn_start.addEventListener("click", function () {
     SoruPuani = quiz.soruGetir().puan;
     ui.quiz_box.classList.add("active");
     startTimer(Sorusuresi);
-    startTimerLine();
+    startTimerLine(Sorusuresi);
     ui.soruGoster(quiz.soruGetir());
     ui.soruSayisiniGoster(quiz.soruIndex + 1, quiz.sorular.length);
     ui.btn_next.classList.remove("show");
@@ -26,11 +26,12 @@ ui.btn_replay.addEventListener("click", function() {
 
 function optionSelected(option) {
   
+
     clearInterval(counterLine);
     GecenSure = counterLine;
     
-    saniye = sayac;
-
+    saniye = quiz.soruGetir().second - sayac;
+    
     let cevap = option.querySelector("span b").textContent;
     let soru = quiz.soruGetir();
 
@@ -46,8 +47,36 @@ function optionSelected(option) {
     for(let i=0; i < ui.option_list.children.length; i++) {
         ui.option_list.children[i].classList.add("disabled");
     }
+  
+    let bodyData = {
+        token: token,
+        skor: quiz.dogruCevapSayisi === 0 ? 0 : (SoruPuani - ((SoruPuani / Sorusuresi) * (Sorusuresi - sayac)))
+    };
 
-    ui.btn_next.classList.add("show");
+   
+
+    fetch('/quiz/UpdateQuiz', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(bodyData)
+
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log("kaydedildi")
+              
+            } else {
+                throw new Error("Quiz güncellenemedi!");
+            }
+        })
+       
+        .catch(error => {
+            console.error("Error:", error);
+        });
+   
 }
 
 let counter;
@@ -66,8 +95,9 @@ function startTimer(time) {
         if(time < 0) {
             clearInterval(counter);
 
+
             ui.time_text.textContent = "Kalan Süre";
-            document.getElementById("next_btn").click();
+           
 
             let cevap = quiz.soruGetir().dogruCevap;
 
@@ -80,26 +110,29 @@ function startTimer(time) {
 
                 option.classList.add("disabled");
             }
-
-            ui.btn_next.classList.add("show");
+            document.getElementById("next_btn").click();
+          
         }
     }
 }
 
 let counterLine;
-function startTimerLine() {
+function startTimerLine(timeInSeconds) {
     let line_width = 0;
+    let maxWidth = 549; // Maksimum genişlik 549px
+    let time_interval = 20; // Her 20ms'de bir çizgi genişliği güncellenecek
+    let total_steps = timeInSeconds * 1000 / time_interval; // Toplam adım sayısı
+    let increment = maxWidth / total_steps; // Her adımda genişliği ne kadar artıracağız
 
-    counterLine = setInterval(timer, 20);
+    counterLine = setInterval(timer, time_interval);
 
     function timer() {
-        line_width += 1;
+        line_width += increment;
         ui.time_line.style.width = line_width + "px";
 
-        if(line_width > 549) {
+        if (line_width >= maxWidth) {
             clearInterval(counterLine);
         }
     }
 }
-
 

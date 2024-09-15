@@ -68,6 +68,23 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+
+    .question_container {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Resim ve soru metni arasındaki boşluk */
+    }
+
+    .question_image img {
+        width: 100px; /* Resmin genişliği */
+        height: auto; /* Oranına göre yükseklik */
+    }
+
+    .question_text {
+        flex-grow: 1;
+    }
+
 </style>
 
 
@@ -126,17 +143,21 @@
     let saniye = 0;
     let Sorusuresi = 0;
     let SoruPuani = 0;
+    const token = "@ViewBag.Token";
+    let alinanPuan = 0;
   
     window.onload = getQuestions;
     var correctAnswersCount = 0;
 
  
-    function Soru(soruMetni, cevapSecenekleri, dogruCevap,second,puan) {
+    function Soru(soruMetni, cevapSecenekleri, dogruCevap, second, puan, imageUrl, questionType) {
         this.soruMetni = soruMetni;
         this.cevapSecenekleri = cevapSecenekleri;
         this.dogruCevap = dogruCevap;
         this.second = second;
         this.puan = puan;
+        this.imageUrl = imageUrl;
+        this.questionType = questionType;
     }
 
     Soru.prototype.cevabiKontrolEt = function (cevap) {
@@ -156,11 +177,15 @@
             .then(data => {
                 var i = 1;
                 sorular = data.map(question => {
-                    sorular.push(new Soru(i + "-" + question.question, { a: question.option1, b: question.option2, c: question.option3, d: question.option4 }, question.correctOption,question.second,question.puan));
+                    i
+                    sorular.push(new Soru(i + "-" + question.question, { a: question.option1, b: question.option2, c: question.option3, d: question.option4 }, question.correctOption, question.second, question.puan, question.imageUrl, question.questionType));
                     i++;
+
+                   
                 });
-            
+                   
                 StartQuiz();
+                console.log(sorular)
             })
             .catch(error => {
                 console.error('Error fetching questions:', error);
@@ -168,27 +193,7 @@
     }
 
     document.getElementById("btn_quit").addEventListener("click", function () {
-        const name = "@ViewBag.Name";
-        const skor = correctAnswersCount;
-
-        fetch('/quiz/FinishQuiz', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ name: name, skor: skor })
-        })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = "/quiz/index";
-                } else {
-                    alert("Quiz bitirilemedi!");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
+        window.location.href = "/quiz/index";
     });
 
     function UI() {
@@ -209,22 +214,127 @@
 
 
     UI.prototype.soruGoster = function (soru) {
-        
-        let question = `<span>${soru.soruMetni}</span>`;
-        let options = '';
 
-        for (let cevap in soru.cevapSecenekleri) {
-            options += `<div class="option"><span><b>${cevap}</b>: ${soru.cevapSecenekleri[cevap]}</span></div>`;
+        if (soru.questionType == 0) {
+            let question = `<span>${soru.soruMetni}</span>`;
+            let options = '';
+
+            for (let cevap in soru.cevapSecenekleri) {
+                options += `<div class="option"><span><b>${cevap}</b>: ${soru.cevapSecenekleri[cevap]}</span></div>`;
+            }
+
+            document.querySelector(".question_text").innerHTML = question;
+            this.option_list.innerHTML = options;
+
+            const option = this.option_list.querySelectorAll(".option");
+
+            for (let opt of option) {
+                opt.setAttribute("onclick", "optionSelected(this)")
+
+            }
+        }
+        if (soru.questionType == 1) {
+            let imageUrl = `/images/${soru.imageUrl}`;
+            let question = `
+            <div class="question_container">
+                <div class="question_image">
+                           <img src="${imageUrl}" alt="Soru Resmi">
+                </div>
+                <div class="question_text">
+                    <span>${soru.soruMetni}</span>
+                </div>
+            </div>`;
+
+            let options = '';
+
+            for (let cevap in soru.cevapSecenekleri) {
+                options += `<div class="option"><span><b>${cevap}</b>: ${soru.cevapSecenekleri[cevap]}</span></div>`;
+            }
+
+            document.querySelector(".question_text").innerHTML = question;
+            this.option_list.innerHTML = options;
+
+            const option = this.option_list.querySelectorAll(".option");
+
+            for (let opt of option) {
+                opt.setAttribute("onclick", "optionSelected(this)");
+            }
         }
 
-        document.querySelector(".question_text").innerHTML = question;
-        this.option_list.innerHTML = options;
+        if (soru.questionType == 3) {
+            let sayac = 0;
+            let videoUrl = `/images/ornek.mp4`;
 
-        const option = this.option_list.querySelectorAll(".option");
+            let question = `
+        <div class="question_container">
+            <div class="question_video">
+                <video id="myVideo" width="360" height="200">
+                    <source src="${videoUrl}" type="video/mp4">
+                    Tarayıcınız bu videoyu desteklemiyor.
+                </video>
+            </div>
+            <div class="question_text">
+                <span>${soru.soruMetni}</span>
+            </div>
+        </div>`;
 
-        for (let opt of option) {
-            opt.setAttribute("onclick", "optionSelected(this)")
+            let options = '';
+
+            for (let cevap in soru.cevapSecenekleri) {
+                options += `<div class="option"><span><b>${cevap}</b>: ${soru.cevapSecenekleri[cevap]}</span></div>`;
+            }
+
+            document.querySelector(".question_text").innerHTML = question;
+            this.option_list.innerHTML = options;
+
+            const option = this.option_list.querySelectorAll(".option");
+
+            for (let opt of option) {
+                opt.setAttribute("onclick", "optionSelected(this)");
+            }
+
+            // JavaScript ile videoyu otomatik başlat
+            const video = document.getElementById('myVideo');
+            video.play(); // Videoyu başlat
+
+            // Video sesini aç
+            video.volume = 1.0;
+
+            // Kullanıcıların videoyu ileri sarmasını engelleme
+            let userCanSeek = false;
+
+            video.addEventListener('loadedmetadata', function () {
+                // Videoyu başlangıçta ileri sarmayı engelle
+                video.addEventListener('seeking', function () {
+                    if (!userCanSeek) {
+                        video.currentTime = video.duration - 1; // Videoyu son frame'e sabitle
+                    }
+                });
+            });
+
+            // Video bittiğinde yeniden başlat ve kullanıcılara kontrol izni ver
+            video.addEventListener('ended', function () {
+                if(sayac==0){
+
+                    startTimer(soru.second);
+                    startTimerLine(soru.second);
+                    sayac++;
+                }
+                video.currentTime = 0;
+                video.play();
+
+                
+                userCanSeek = true;
+
+            });
         }
+
+
+
+    
+
+
+       
     };
 
     UI.prototype.soruSayisiniGoster = function (soruSirasi, toplamSoru) {
@@ -233,29 +343,23 @@
     };
 
     UI.prototype.skoruGoster = function (toplamSoru, dogruCevap) {
-        let tag = `Toplam ${toplamSoru} sorudan ${dogruCevap} doğru cevap verdiniz.`;
+        let tag = `Tebrikler! ${alinanPuan} Puan Aldınız!.`;
         document.querySelector(".score_box .score_text").innerHTML = tag;
         correctAnswersCount = dogruCevap;
     };
 
     document.getElementById("next_btn").addEventListener("click", function () {
+        const id = token;
+    
+       
 
-        const skor = correctAnswersCount;
-        const token = "@ViewBag.Token";
-        
-        let bodyData = {
-            token: token,
-            skor: quiz.dogruCevapSayisi === 0 ? 0 : (saniye * SoruPuani) / Sorusuresi
-        };
-
-        fetch('/quiz/UpdateQuiz', {
-            method: 'POST',
+        fetch('/quiz/ResultQuiz/'+id, {
+            method: 'Get',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+         
             },
-            body: JSON.stringify(bodyData)
-           
+                     
         })
             .then(response => {
                 if (response.ok) {
@@ -266,7 +370,7 @@
             })
             .then(contestantList => {
                 quiz.dogruCevapSayisi = 0;
-
+              
                 // Modal'ı göster
                 const modal = document.getElementById('resultModal');
                 modal.style.display = "block";
@@ -278,7 +382,12 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `<td>${contestant.name}</td><td>${contestant.skor}</td>`;
                     tableBody.appendChild(row);
+                    if (token == contestant.token) {
+                        alinanPuan = contestant.skor;
+                       
+                    }
                 });
+               
 
                 // 10 saniye sonra modalı kapatın ve diğer soruya geçin
                 setTimeout(() => {
@@ -289,8 +398,11 @@
                         quiz.soruIndex += 1;
                         clearInterval(counter);
                         clearInterval(counterLine);
-                        startTimer(quiz.soruGetir().second)
-                        startTimerLine();
+                        if (quiz.soruGetir().questionType != 3) {
+                            startTimer(quiz.soruGetir().second)
+                            startTimerLine(quiz.soruGetir().second);
+                        }
+                        
                         ui.soruGoster(quiz.soruGetir());
                         ui.soruSayisiniGoster(quiz.soruIndex + 1, quiz.sorular.length);
                         ui.btn_next.classList.remove("show");

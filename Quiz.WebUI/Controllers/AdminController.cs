@@ -86,13 +86,16 @@ namespace Quiz.WebUI.Controllers
             return View();
         }
 
-        public async Task< IActionResult> ManageQuiz()
+        public async Task< IActionResult> ManageQuiz(int minute)
         {
+
+
             var oturum = new Oturum()
             {
                 CompetitorsNumber = 0,
                 Date = DateTime.Now,
                 Token = Guid.NewGuid().ToString(),
+                Munite=minute,
                 Status=1
             };
             _quizContext.Oturums.Add(oturum);
@@ -101,13 +104,13 @@ namespace Quiz.WebUI.Controllers
             var session = await _quizContext.QuizSessions.FirstOrDefaultAsync();
             if (session == null)
             {
-                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddSeconds(10) };
+                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddMinutes(minute) };
                 _quizContext.QuizSessions.Add(session);
                 await _quizContext.SaveChangesAsync();
             }
             else
             {
-                session.QuizStartTime = DateTime.Now.AddSeconds(5);
+                session.QuizStartTime = DateTime.Now.AddMinutes(minute);
                 _quizContext.QuizSessions.Update(session);
                 await _quizContext.SaveChangesAsync();
             }

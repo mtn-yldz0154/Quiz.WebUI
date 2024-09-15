@@ -36,6 +36,7 @@ UI.prototype.soruGoster = function (soru) {
 
     for(let opt of option) {
         opt.setAttribute("onclick", "optionSelected(this)")
+        
     }
 }
 
