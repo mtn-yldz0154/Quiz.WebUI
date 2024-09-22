@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Quiz.WebUI.Context;
 using Quiz.WebUI.Dtos;
 using Quiz.WebUI.Entities;
+using Quiz.WebUI.Helpers;
 using Quiz.WebUI.Models;
 
 namespace Quiz.WebUI.Controllers
@@ -24,31 +25,77 @@ namespace Quiz.WebUI.Controllers
             return View();
         }
 
-        public  IActionResult AddQuestion()
+        public IActionResult AddQuestion()
         {
             return View();
         }
 
         [HttpPost]
-        
-        public IActionResult AddQuestion([FromBody] QuestionDto model)
+        public IActionResult AddQuestion([FromForm] QuestionDto model, IFormFile? imageFile)
         {
+            // QuestionType değerini varsayılan olarak 'choice' olarak ayarlıyoruz
+            var questionType = model.QuestionType;
+            string imageName = "";
+            if (imageFile != null)
+            {
+                var fileExtension = Path.GetExtension(imageFile.FileName).ToLower();
+
+                // Dosya uzantısını kontrol et
+                if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png")
+                {
+                    questionType = EnumQuestionType.photo;
+                }
+                else if (fileExtension == ".mp4" || fileExtension == ".avi" || fileExtension == ".mov")
+                {
+                    questionType = EnumQuestionType.video;
+                }
+                else if (fileExtension == ".mp3" || fileExtension == ".mkv" || fileExtension == ".wav" || fileExtension == ".aac" || fileExtension == ".ogg" || fileExtension == ".flac")
+                {
+                    questionType = EnumQuestionType.sound;
+                }
+                imageName = UploadFile.Upload(imageFile);
+            }
+
             var question = new Questions()
             {
                 Option1 = model.Option1,
-                Option2 = model.Option2,    
+                Option2 = model.Option2,
                 Option3 = model.Option3,
                 Option4 = model.Option4,
                 CorrectOption = model.CorrectOption,
                 Question = model.Question,
-                Second=model.Second,
-                Puan=model.Puan,
-               QuestionType=EnumQuestionType.choice
+                Second = model.Second,
+                Puan = model.Puan,
+                QuestionType = questionType, // Dinamik olarak belirlenen QuestionType
+                ImageUrl = imageName
             };
 
             _quizContext.Questions.Add(question);
             _quizContext.SaveChanges();
-            return Ok(); 
+            return RedirectToAction("GetQuestions", "Admin");
+        }
+        public IActionResult DeleteQuestion(int id)
+        {
+            // Soruyu veritabanından bul
+            var question = _quizContext.Questions.Find(id);
+
+            if (question != null)
+            {
+                // Dosya yolunu belirleyin (örneğin, belirli bir dizinde saklıyorsanız)
+                string filePath = Path.Combine("DosyaYolu", question.ImageUrl); // ImageFileName, sorunun dosya adını tutan bir alan olmalı
+
+                // Dosyayı sil
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                // Soruyu veritabanından sil
+                _quizContext.Questions.Remove(question);
+                _quizContext.SaveChanges();
+            }
+
+            return RedirectToAction("GetQuestions", "Admin");
         }
 
 
@@ -65,7 +112,7 @@ namespace Quiz.WebUI.Controllers
         }
         public IActionResult StartOturum()
         {
-            var questions= _quizContext.Questions.ToList();
+            var questions = _quizContext.Questions.ToList();
 
             return View(questions);
         }
@@ -81,12 +128,12 @@ namespace Quiz.WebUI.Controllers
             {
                 ViewBag.oturum = 1;
                 // Admin quiz'i başlatırsa tüm katılımcılara mesaj gönderir
-                
+
             }
             return View();
         }
 
-        public async Task< IActionResult> ManageQuiz(int minute)
+        public async Task<IActionResult> ManageQuiz(int minute)
         {
 
 
@@ -95,8 +142,8 @@ namespace Quiz.WebUI.Controllers
                 CompetitorsNumber = 0,
                 Date = DateTime.Now,
                 Token = Guid.NewGuid().ToString(),
-                Munite=minute,
-                Status=1
+                Munite = minute,
+                Status = 1
             };
             _quizContext.Oturums.Add(oturum);
             _quizContext.SaveChanges();
@@ -119,7 +166,7 @@ namespace Quiz.WebUI.Controllers
             return RedirectToAction("StartQuiz");
 
         }
-      
+
         public async Task<IActionResult> GetCountdown()
         {
             var session = await _quizContext.QuizSessions.FirstOrDefaultAsync();
@@ -144,7 +191,7 @@ namespace Quiz.WebUI.Controllers
         {
             var contestants = _quizContext.Contestants
      .Where(i => i.OturumId == id)
-     .OrderByDescending(i => i.Skor) 
+     .OrderByDescending(i => i.Skor)
      .ToList();
 
             return View(contestants);
