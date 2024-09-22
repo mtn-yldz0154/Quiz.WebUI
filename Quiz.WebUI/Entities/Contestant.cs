@@ -10,6 +10,8 @@
 
         public int Skor { get; set; }
 
+        public int Answer { get; set; }
+
         public Oturum Oturum { get; set; }
         public int OturumId { get; set; }
 

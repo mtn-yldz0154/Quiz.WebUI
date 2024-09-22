@@ -11,7 +11,7 @@
         public string Option3 { get; set; }
         public string Option4 { get; set; }
         public string CorrectOption { get; set; }
-
+        public int Answer { get; set; }
         public string ImageUrl { get; set; }
         public int Second { get; set; }
         public int Puan { get; set; }
