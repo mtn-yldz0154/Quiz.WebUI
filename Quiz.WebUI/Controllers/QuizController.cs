@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Quiz.WebUI.Context;
 using Quiz.WebUI.Entities;
 using Quiz.WebUI.Models;
@@ -22,7 +23,6 @@ namespace Quiz.WebUI.Controllers
             return View();
         }
 
-
         public IActionResult StartQuiz(string id)
         {
             var oturum=_quizContext.Oturums.Where(i=>i.Status==1).FirstOrDefault();
@@ -38,10 +38,6 @@ namespace Quiz.WebUI.Controllers
             return PartialView("StartQuiz");
 
         }
-
-
-        
-
 
         [HttpPost]
         public IActionResult FinishQuiz([FromBody] QuizResultModel model)
@@ -81,16 +77,42 @@ namespace Quiz.WebUI.Controllers
         [HttpPost]
         public IActionResult UpdateQuiz([FromBody] QuizResultModel model)
         {
-           
+            // Model'den gelen token ile contestant'ı bul
+            var contestant = _quizContext.Contestants.FirstOrDefault(i => i.Token == model.Token);
 
-            var contestant = _quizContext.Contestants.Where(i => i.Token == model.Token).FirstOrDefault();
+            // Eğer contestant null ise, işlem yapılmadan hata dönülmeli
+            if (contestant == null)
+            {
+                return BadRequest("Geçersiz kullanıcı.");
+            }
+
+            // Kullanıcının skorunu güncelle
             contestant.Skor += model.Skor;
 
-            _quizContext.Contestants.Update(contestant);
-            _quizContext.SaveChanges();
+            // Eğer sorunun tipi 4 ise, cevabı kaydet
 
-            return Ok();
+            var question = _quizContext.Questions.Where(i => i.Id == model.QuestionId).FirstOrDefault();
+            if (model.QuestionType == 4)
+            {
+                var answer = new AnswerQuestion()
+                {
+                    UserToken = model.Token,
+                    Answer = model.Answer,
+                    OturumId = contestant.OturumId,
+                    QuestionToken = model.QuestionId,
+                    Munite=question.Second-model.Munite,
+                };
+
+                // Cevabı veritabanına ekle ve değişiklikleri kaydet
+                _quizContext.AnswerQuestions.Add(answer);
+                _quizContext.SaveChanges();
+
+                return Ok("Cevap kaydedildi.");
+            }
+
+            return BadRequest("Geçersiz soru tipi.");
         }
+
 
 
         public IActionResult ResultQuiz(string id)
@@ -99,5 +121,97 @@ namespace Quiz.WebUI.Controllers
             var contestantList = _quizContext.Contestants.Where(i => i.OturumId == contestant.OturumId).OrderByDescending(i=>i.Skor).ToList();
             return Json(contestantList);
         }
+
+       
+        
+      [HttpPost]
+        public async Task<IActionResult> GetResultQuizAnswer([FromBody] QuizRequestModel model)
+        {
+            // Soruyu ve yarışmacıyı bul
+            var question = await _quizContext.Questions.FirstOrDefaultAsync(i => i.Id == model.QuestionId);
+            var contestant = await _quizContext.Contestants.FirstOrDefaultAsync(i => i.Token == model.Id);
+
+            if (question == null)
+            {
+                return NotFound("Soru bulunamadı.");
+            }
+
+            // Bu soruya verilen cevapları getir ve her yarışmacının en hızlı cevabını dikkate al
+            var answers = await _quizContext.AnswerQuestions
+                                            .Where(i => i.QuestionToken == model.QuestionId && i.OturumId == contestant.OturumId)
+                                            .GroupBy(i => i.OturumId)  // Aynı yarışmacının en hızlı cevabını al
+                                            .Select(g => g.OrderBy(i => i.Munite).First())  // En hızlı cevabı al
+                                            .ToListAsync();
+
+            // Doğru cevabı al
+            var correctAnswer = question.Answer;
+
+            // En yakın cevabı ve süresini bulmak için değişkenler
+            AnswerQuestion closestAnswer = null;
+            int minDifference = int.MaxValue; // Cevaba olan farkı minimum tutmak için
+            int bestTime = int.MaxValue;      // En iyi süreyi bulmak için
+
+            // En iyi cevabı ve süresini bul
+            foreach (var answer in answers)
+            {
+                // Doğru cevaba olan fark
+                int difference = Math.Abs(answer.Answer - correctAnswer);
+
+                // Eğer cevaba olan fark daha küçükse veya fark eşitse süreye bak
+                if (difference < minDifference || (difference == minDifference && answer.Munite < bestTime))
+                {
+                    closestAnswer = answer;
+                    minDifference = difference;
+                    bestTime = answer.Munite;
+                }
+            }
+
+            // Eğer en yakın ve en hızlı cevap varsa, tek seferde 100 puan ekleyelim
+            if (closestAnswer != null)
+            {
+                var closestContestant = await _quizContext.Contestants.FirstOrDefaultAsync(i => i.Token == closestAnswer.UserToken);
+
+                // Bu soruya daha önce puan verilip verilmediğini kontrol et
+                var existingScore = await _quizContext.ContestantScores
+                                                      .FirstOrDefaultAsync(cs => cs.ContestantId == closestContestant.Id && cs.QuestionId == model.QuestionId);
+
+                if (closestContestant != null && existingScore == null)  // Eğer daha önce bu soruya puan eklenmemişse
+                {
+                    closestContestant.Skor += 100; // Puanı ekle
+
+                    // Bu yarışmacıya ve bu soruya özel puan eklenme bilgisini kaydet
+                    _quizContext.ContestantScores.Add(new ContestantScores
+                    {
+                        ContestantId = closestContestant.Id,
+                        QuestionId = model.QuestionId,
+                        Score = 100
+                    });
+                    await _quizContext.SaveChangesAsync(); // Veritabanına kaydet
+                }
+
+                // Tüm yarışmacıları listele ve skorlarına göre sırala
+                var contestantList = await _quizContext.Contestants
+                                                       .Where(i => i.OturumId == contestant.OturumId)
+                                                       .OrderByDescending(i => i.Skor)
+                                                       .ToListAsync();
+
+                // Yarışmacı listesini döndür
+                return Json(contestantList);
+            }
+
+            return BadRequest("En yakın cevap bulunamadı.");
+        }
+
+
+
+        // QuizRequestModel: Kullanıcıdan gelen veriyi modellemek için
+        public class QuizRequestModel
+        {
+            public string Id { get; set; }         // Yarışmacı ID'si (Token)
+            public int QuestionId { get; set; }    // Soru ID'si
+        }
+
+
+
     }
 }

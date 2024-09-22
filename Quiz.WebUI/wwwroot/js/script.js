@@ -83,9 +83,11 @@ let counter;
 let toplamZaman;
 
 function startTimer(time) {
+
     counter = setInterval(timer, 1000);
 
     function timer() {
+      
         sayac = time;
 
         ui.time_second.textContent = time;
@@ -95,21 +97,24 @@ function startTimer(time) {
         if(time < 0) {
             clearInterval(counter);
 
+            if (quiz.soruGetir().questionType != 4) {
+                ui.time_text.textContent = "Kalan Süre";
 
-            ui.time_text.textContent = "Kalan Süre";
-           
 
-            let cevap = quiz.soruGetir().dogruCevap;
+                let cevap = quiz.soruGetir().dogruCevap;
 
-            for(let option of ui.option_list.children) {
+                for (let option of ui.option_list.children) {
 
-                if(option.querySelector("span b").textContent == cevap) {
-                    option.classList.add("correct");
-                    option.insertAdjacentHTML("beforeend", ui.correctIcon);
+                    if (option.querySelector("span b").textContent == cevap) {
+                        option.classList.add("correct");
+                        option.insertAdjacentHTML("beforeend", ui.correctIcon);
+                    }
+
+                    option.classList.add("disabled");
                 }
-
-                option.classList.add("disabled");
             }
+
+           
             document.getElementById("next_btn").click();
           
         }

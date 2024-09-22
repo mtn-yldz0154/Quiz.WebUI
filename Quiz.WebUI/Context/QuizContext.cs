@@ -19,5 +19,7 @@ namespace Quiz.WebUI.Context
         public DbSet<QuizSession> QuizSessions { get; set; }
   
         public DbSet<Questions> Questions { get; set; }
+        public DbSet<AnswerQuestion> AnswerQuestions { get; set; }
+        public DbSet<ContestantScores> ContestantScores { get; set; }
     }
 }
