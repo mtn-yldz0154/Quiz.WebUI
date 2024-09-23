@@ -84,17 +84,20 @@ let toplamZaman;
 
 function startTimer(time) {
 
+   
+    timer();
+
     counter = setInterval(timer, 1000);
 
     function timer() {
-      
+
         sayac = time;
 
         ui.time_second.textContent = time;
-        
+
         time--;
-        
-        if(time < 0) {
+
+        if (time < 0) {
             clearInterval(counter);
 
             if (quiz.soruGetir().questionType != 4) {
@@ -114,12 +117,12 @@ function startTimer(time) {
                 }
             }
 
-           
             document.getElementById("next_btn").click();
-          
+
         }
     }
 }
+
 
 let counterLine;
 function startTimerLine(timeInSeconds) {

@@ -107,7 +107,7 @@ namespace Quiz.WebUI.Controllers
 
         public IActionResult GetQuestionList()
         {
-            var questions = _quizContext.Questions.ToList();
+            var questions = _quizContext.Questions.OrderBy(i=>i.QuestionType).ToList();
             return Ok(questions);
         }
         public IActionResult StartOturum()

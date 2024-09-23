@@ -34,6 +34,8 @@ namespace Quiz.WebUI.Controllers
             }
 
             ViewBag.Token = id;
+            ViewBag.name = _quizContext.Contestants.Where(i => i.Token == id).FirstOrDefault().Name;
+            ViewBag.puan = _quizContext.Contestants.Where(i => i.Token == id).FirstOrDefault().Skor;
 
             return PartialView("StartQuiz");
 
@@ -88,8 +90,8 @@ namespace Quiz.WebUI.Controllers
 
             // Kullanıcının skorunu güncelle
             contestant.Skor += model.Skor;
-
-            // Eğer sorunun tipi 4 ise, cevabı kaydet
+            _quizContext.Contestants.Update(contestant);
+            _quizContext.SaveChanges();
 
             var question = _quizContext.Questions.Where(i => i.Id == model.QuestionId).FirstOrDefault();
             if (model.QuestionType == 4)
@@ -110,7 +112,7 @@ namespace Quiz.WebUI.Controllers
                 return Ok("Cevap kaydedildi.");
             }
 
-            return BadRequest("Geçersiz soru tipi.");
+            return Ok("Cevap kaydedildi.");
         }
 
 
@@ -119,7 +121,13 @@ namespace Quiz.WebUI.Controllers
         {
             var contestant = _quizContext.Contestants.Where(i => i.Token == id).FirstOrDefault();
             var contestantList = _quizContext.Contestants.Where(i => i.OturumId == contestant.OturumId).OrderByDescending(i=>i.Skor).ToList();
-            return Json(contestantList);
+            var skor = contestant.Skor;
+
+            return Json(new
+            {
+                Skor = skor,
+                ContestantList = contestantList
+            });
         }
 
        
@@ -150,19 +158,29 @@ namespace Quiz.WebUI.Controllers
             AnswerQuestion closestAnswer = null;
             int minDifference = int.MaxValue; // Cevaba olan farkı minimum tutmak için
             int bestTime = int.MaxValue;      // En iyi süreyi bulmak için
-
+            var totalPoint = question.Puan;
+            var totalTime = question.Second;
+            double highScore = 0;
             // En iyi cevabı ve süresini bul
             foreach (var answer in answers)
             {
                 // Doğru cevaba olan fark
-                int difference = Math.Abs(answer.Answer - correctAnswer);
+                int accuracyPoints = Math.Max(0,totalPoint-Math.Abs(answer.Answer-correctAnswer));
+                double timeMuliplier = (double)(totalTime - answer.Munite) / totalTime;
+                double totalScore = accuracyPoints * (1 + timeMuliplier);
 
                 // Eğer cevaba olan fark daha küçükse veya fark eşitse süreye bak
-                if (difference < minDifference || (difference == minDifference && answer.Munite < bestTime))
+                //if (difference < minDifference || (difference == minDifference && answer.Munite < bestTime))
+                //{
+                //    closestAnswer = answer;
+                //    minDifference = difference;
+                //    bestTime = answer.Munite;
+                //}
+
+                if (totalScore >highScore)
                 {
-                    closestAnswer = answer;
-                    minDifference = difference;
-                    bestTime = answer.Munite;
+                    closestAnswer=answer;
+                    highScore= totalScore;
                 }
             }
 
@@ -177,14 +195,14 @@ namespace Quiz.WebUI.Controllers
 
                 if (closestContestant != null && existingScore == null)  // Eğer daha önce bu soruya puan eklenmemişse
                 {
-                    closestContestant.Skor += 100; // Puanı ekle
+                    closestContestant.Skor += (int)highScore; // Puanı ekle
 
                     // Bu yarışmacıya ve bu soruya özel puan eklenme bilgisini kaydet
                     _quizContext.ContestantScores.Add(new ContestantScores
                     {
                         ContestantId = closestContestant.Id,
                         QuestionId = model.QuestionId,
-                        Score = 100
+                        Score = (int)highScore
                     });
                     await _quizContext.SaveChangesAsync(); // Veritabanına kaydet
                 }
@@ -195,8 +213,12 @@ namespace Quiz.WebUI.Controllers
                                                        .OrderByDescending(i => i.Skor)
                                                        .ToListAsync();
 
-                // Yarışmacı listesini döndür
-                return Json(contestantList);
+           
+                return Json(new
+                {
+                    Skor = contestant.Skor,
+                    ContestantList = contestantList
+                });
             }
 
             return BadRequest("En yakın cevap bulunamadı.");
