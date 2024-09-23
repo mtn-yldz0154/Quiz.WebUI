@@ -180,7 +180,7 @@
                 <div class="tab-content pt-2">
 
                     <div class="tab-pane fade show active profile-overview" id="profile-overview" role="tabpanel">
-                        <h5 class="card-title">About</h5>
+                   
 
                         <form asp-controller="Admin" asp-action="AddQuestion" class="quiz-form" method="post" enctype="multipart/form-data">
                             <div id="questionContainer">
@@ -233,7 +233,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <input type="submit" class="btn btn-primary" value="Soru Ekle<" />
+                                    <input type="submit" class="btn btn-primary" value="Soru Ekle" />
                                 </div>
                             </div>
 
@@ -251,7 +251,7 @@
 
                     <div class="tab-pane fade profile-edit pt-3" id="profile-edit" role="tabpanel">
 
-                        <h5 class="card-title">About</h5>
+                     
 
                         <form asp-controller="Admin" asp-action="AddQuestion" class="quiz-form" method="post" enctype="multipart/form-data">
                             <div id="questionContainer">
@@ -260,7 +260,7 @@
                                     <label for="Question">Soru:</label>
                                     <textarea id="Question" name="Question" class="form-control" placeholder="Soru metnini buraya girin..." required></textarea>
                                 </div>
-                                <input type="hidden" id="QuestionType" name="QuestionType" class="form-control" value="@EnumQuestionType.file" />
+             
                                 <div class="form-group">
                                     <label for="Option1">Seçenek 1:</label>
                                     <input type="text" id="Option1" name="Option1" class="form-control" placeholder="Seçenek 1" required />
@@ -307,7 +307,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <input type="submit" class="btn btn-primary" value="Soru Ekle<" />
+                                    <input type="submit" class="btn btn-primary" value="Soru Ekle"/>
 
                                 </div>
                             </div>
@@ -326,7 +326,7 @@
                     </div>
 
                     <div class="tab-pane fade pt-3" id="profile-settings" role="tabpanel">
-                        <h5 class="card-title">About</h5>
+                       
 
                         <form asp-controller="Admin" asp-action="AddQuestion" class="quiz-form" method="post" enctype="multipart/form-data">
                             <div id="questionContainer">
@@ -352,7 +352,7 @@
 
                                 <div class="form-group">
 @*                                     <button type="button" class="btn-submit" onclick="addQuestion()">Soru Ekle</button>
- *@                                    <input type="submit" class="btn btn-primary" value="Soru Ekle<" />
+ *@                                    <input type="submit" class="btn btn-primary" value="Soru Ekle" />
                                 </div>
                             </div>
 

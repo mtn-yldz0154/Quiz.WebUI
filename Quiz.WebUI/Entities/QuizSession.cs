@@ -4,5 +4,7 @@
     {
         public int Id { get; set; }
         public DateTime QuizStartTime { get; set; }
+
+
     }
 }

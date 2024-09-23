@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "StartQuiz";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
@@ -8,24 +7,64 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
 <link rel="stylesheet" href="~/css/style.css">
 
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    @if (ViewBag.Oturum == 0)
-    {
-        <input type="number" id="minute" name="minute" placeholder="Süreyi giriniz" />
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Oturum Başlat</h5>
+                @if (ViewBag.Oturum == 0)
+                {
+                    <!-- Vertical Form -->
+                    <form class="row g-3" asp-action="ManageQuiz" asp-controller="Admin" method="post">
+                        <div class="col-12">
+                            <label for="minute" class="form-label">Süreyi giriniz</label>
+                            <input type="number" name="minute" class="form-control" value="0">
+                        </div>
 
-        <div class="text-center">
-            <a href="/admin/ManageQuiz" id="startQuiz" class="btn btn-success btn-lg" onclick="setQuizTime()">Quiz Başlat</a>
+                        <div class="col-12">
+                            <label for="minute" class="form-label">1. Mola Süresini giriniz</label>
+                            <input type="number" name="Mola1" class="form-control" value="0">
+                        </div>
+                        <div class="col-12">
+                            <label for="minute" class="form-label">2. Mola Süresini giriniz</label>
+                            <input type="number" name="Mola2" class="form-control" value="0">
+                        </div>
+                        <div class="text-center">
+                            @*  <a href="/admin/ManageQuiz" id="startQuiz" class="btn btn-success btn-lg" onclick="setQuizTime()">Quiz Başlat</a> *@
+                            <input type="submit" class="btn btn-primary" value="Oturumu Başlat" />
+                        </div>
+                    </form>
+
+                    <!-- Vertical Form -->
+                }
+                else
+                {
+
+                    <div class="alert alert-warning text-center" role="alert">
+                        Devam eden bir oturum var!
+                    </div>
+                }
+            </div>
         </div>
+    </div>
+</div>
+@*     @if (ViewBag.Oturum == 0)
+    {
+    <input type="number" id="minute" name="minute" placeholder="Süreyi giriniz" />
+
+    <div class="text-center">
+    <a href="/admin/ManageQuiz" id="startQuiz" class="btn btn-success btn-lg" onclick="setQuizTime()">Quiz Başlat</a>
+    </div>
     }
     else if (ViewBag.Oturum == 1)
     {
-        <div class="alert alert-warning text-center" role="alert">
-            Devam eden bir oturum var!
-        </div>
-    }
-</div>
+    <div class="alert alert-warning text-center" role="alert">
+    Devam eden bir oturum var!
+    </div>
+    } *@
 
-<script>
+
+@* <script>
     function setQuizTime() {
         // Get the value from the input field
         var minuteValue = document.getElementById("minute").value;
@@ -38,4 +77,4 @@
             quizLink.href = "/admin/ManageQuiz?minute=" + minuteValue;
         }
     }
-</script>
+</script> *@

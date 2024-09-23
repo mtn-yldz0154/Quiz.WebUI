@@ -25,11 +25,9 @@ public enum EnumQuestionType
 {
 
     choice = 0,
-    file = 1,
-    input = 2,
-    guess = 3,
-    photo = 4,
-    video = 5,
-    sound = 6
+    photo = 1,
+    video = 2,
+    sound = 3,
+    guess = 4,
 
 }

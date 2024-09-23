@@ -107,7 +107,7 @@ namespace Quiz.WebUI.Controllers
 
         public IActionResult GetQuestionList()
         {
-            var questions = _quizContext.Questions.ToList();
+            var questions = _quizContext.Questions.OrderBy(i=>i.QuestionType).ToList();
             return Ok(questions);
         }
         public IActionResult StartOturum()
@@ -132,8 +132,8 @@ namespace Quiz.WebUI.Controllers
             }
             return View();
         }
-
-        public async Task<IActionResult> ManageQuiz(int minute)
+        [HttpPost]
+        public async Task<IActionResult> ManageQuiz(OturumModel oturumModel)
         {
 
 
@@ -142,8 +142,10 @@ namespace Quiz.WebUI.Controllers
                 CompetitorsNumber = 0,
                 Date = DateTime.Now,
                 Token = Guid.NewGuid().ToString(),
-                Munite = minute,
-                Status = 1
+                Munite =oturumModel.minute,
+                Status = 1,
+                Mola1=oturumModel.Mola1,
+                Mola2=oturumModel.Mola2,
             };
             _quizContext.Oturums.Add(oturum);
             _quizContext.SaveChanges();
@@ -151,13 +153,13 @@ namespace Quiz.WebUI.Controllers
             var session = await _quizContext.QuizSessions.FirstOrDefaultAsync();
             if (session == null)
             {
-                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddMinutes(minute) };
+                session = new Entities.QuizSession { QuizStartTime = DateTime.Now.AddMinutes(oturumModel.minute) };
                 _quizContext.QuizSessions.Add(session);
                 await _quizContext.SaveChangesAsync();
             }
             else
             {
-                session.QuizStartTime = DateTime.Now.AddMinutes(minute);
+                session.QuizStartTime = DateTime.Now.AddMinutes(oturumModel.minute);
                 _quizContext.QuizSessions.Update(session);
                 await _quizContext.SaveChangesAsync();
             }
@@ -196,5 +198,11 @@ namespace Quiz.WebUI.Controllers
 
             return View(contestants);
         }
+    }
+    public class OturumModel
+    {
+        public int minute { get; set; }
+        public int Mola1 { get; set; }
+        public int Mola2 { get; set; }
     }
 }

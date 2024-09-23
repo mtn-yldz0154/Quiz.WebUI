@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Quiz.WebUI.Context;
 
@@ -11,9 +12,10 @@ using Quiz.WebUI.Context;
 namespace Quiz.WebUI.Migrations
 {
     [DbContext(typeof(QuizContext))]
-    partial class QuizContextModelSnapshot : ModelSnapshot
+    [Migration("20241124163746_mola1mola2update")]
+    partial class mola1mola2update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,12 +121,6 @@ namespace Quiz.WebUI.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Mola1")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Mola2")
-                        .HasColumnType("int");
-
                     b.Property<int>("Munite")
                         .HasColumnType("int");
 
@@ -196,6 +192,12 @@ namespace Quiz.WebUI.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("Mola1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Mola2")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("QuizStartTime")
                         .HasColumnType("datetime2");

@@ -15,5 +15,8 @@
         public int Munite {  get; set; }
         public DateTime Date { get; set; }
         public List<Contestant> Contestants { get; set; }
+
+        public  int Mola1 { get; set; }
+        public  int Mola2 { get; set; }
     }
 }

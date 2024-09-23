@@ -111,7 +111,10 @@
 
 <div class="card quiz_box">
     <header class="card-header">
-        <div class="title">Quiz App</div>
+        <div class="title" > 
+            <span>@ViewBag.name</span>
+            <span id="puan">@ViewBag.puan</span>
+            </div>
         <div class="timer">
             <div class="time_text">Kalan Süre</div>
             <div class="time_second">10</div>
@@ -237,7 +240,7 @@
 
             }
         }
-        if (soru.questionType == 1) {
+        if (soru.questionType ==1 ) {
             let imageUrl = `/images/${soru.imageUrl}`;
             let question = `
             <div class="question_container">
@@ -265,7 +268,7 @@
             }
         }
 
-        if (soru.questionType == 3) {
+        if (soru.questionType == 2) {
             let sayac = 0;
             let videoUrl = `/images/ornek.mp4`;
 
@@ -429,7 +432,13 @@
                         throw new Error("Quiz güncellenemedi!");
                     }
                 })
-                .then(contestantList => {
+                .then(data => {
+
+                    if (data.skor !== null && data.skor !== undefined) {
+                        document.getElementById("puan").textContent = data.skor.toString();
+                    } else {
+                        document.getElementById("puan").textContent = "Skor bulunamadı";  // Hata durumunda alternatif mesaj
+                    }
                     quiz.dogruCevapSayisi = 0;
 
                     // Modal'ı göster
@@ -439,9 +448,13 @@
                     // Yarışmacı listesini tabloya ekleyin
                     const tableBody = document.querySelector('#resultTable tbody');
                     tableBody.innerHTML = '';  // Eski sonuçları temizleyin
-                    contestantList.forEach(contestant => {
+                    data.contestantList.forEach(contestant => {
+                        
+                       
+
                         const row = document.createElement('tr');
                         row.innerHTML = `<td>${contestant.name}</td><td>${contestant.skor}</td>`;
+                        
                         tableBody.appendChild(row);
                         if (token == contestant.token) {
                             alinanPuan = contestant.skor;
@@ -457,7 +470,7 @@
                             quiz.soruIndex += 1;
                             clearInterval(counter);
                             clearInterval(counterLine);
-                            if (quiz.soruGetir().questionType != 3) {
+                            if (quiz.soruGetir().questionType != 2) {
                                 startTimer(quiz.soruGetir().second);
                                 startTimerLine(quiz.soruGetir().second);
                             }
@@ -495,7 +508,14 @@
                     throw new Error("Quiz güncellenemedi!");
                 }
             })
-            .then(contestantList => {
+            .then(data => {
+            
+                    if (data.skor !== null && data.skor !== undefined) {
+                        document.getElementById("puan").textContent = data.skor.toString();
+                    } else {
+                        document.getElementById("puan").textContent = "Skor bulunamadı";  // Hata durumunda alternatif mesaj
+                    }
+
                 quiz.dogruCevapSayisi = 0;
               
                 // Modal'ı göster
@@ -505,7 +525,7 @@
                 // Yarışmacı listesini tabloya ekleyin
                 const tableBody = document.querySelector('#resultTable tbody');
                 tableBody.innerHTML = '';  // Eski sonuçları temizleyin
-                contestantList.forEach(contestant => {
+                data.contestantList.forEach(contestant => {
                     const row = document.createElement('tr');
                     row.innerHTML = `<td>${contestant.name}</td><td>${contestant.skor}</td>`;
                     tableBody.appendChild(row);
@@ -525,7 +545,7 @@
                         quiz.soruIndex += 1;
                         clearInterval(counter);
                         clearInterval(counterLine);
-                        if (quiz.soruGetir().questionType != 3) {
+                        if (quiz.soruGetir().questionType != 2) {
                             startTimer(quiz.soruGetir().second)
                             startTimerLine(quiz.soruGetir().second);
                         }
