@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Quiz.WebUI.Context;
 using System;
 using System.Threading.Tasks;
@@ -12,55 +13,50 @@ namespace Quiz.WebUI.Controllers
     public class QuizSessionController : ControllerBase
     {
         private readonly QuizContext _context;
+        private readonly IMemoryCache _cache;
 
-        // Mola1 ve Mola2 için başlangıç zamanlarını tutacak değişkenler
-        private DateTime? _mola1StartTime = null;
-        private DateTime? _mola2StartTime = null;
-
-        public QuizSessionController(QuizContext context)
+        public QuizSessionController(QuizContext context, IMemoryCache cache)
         {
             _context = context;
-        }
-
-        [HttpGet("GetCountdown")]
-        public async Task<IActionResult> GetCountdown()
-        {
-            var session = await _context.QuizSessions.FirstOrDefaultAsync();
-            if (session == null)
-            {
-                return NotFound();
-            }
-
-            var remainingTime = (session.QuizStartTime - DateTime.Now).TotalSeconds;
-            return Ok(new { remainingTime = Math.Max(remainingTime, 0) });
+            _cache = cache;
         }
 
         [HttpGet("Mola1Getir")]
         public async Task<IActionResult> Mola1Getir()
         {
-            var session = await _context.QuizSessions.FirstOrDefaultAsync();
-            if (session == null)
+            const string cacheKey = "Mola1RemainingSeconds";
+
+            // Cache'ten kalan süreyi al
+            if (!_cache.TryGetValue(cacheKey, out int? remainingSeconds))
             {
-                return NotFound();
+                var session = await _context.QuizSessions.FirstOrDefaultAsync();
+                if (session == null)
+                {
+                    return NotFound();
+                }
+
+                var lastOturum = _context.Oturums.OrderByDescending(a => a.Id).FirstOrDefault();
+                if (lastOturum == null)
+                {
+                    return NotFound();
+                }
+
+                // Eğer mola süresi henüz ayarlanmamışsa
+                var mola1Dakika = lastOturum.Mola1; // Null ise 0 kabul et
+                remainingSeconds = mola1Dakika * 60;
+
+                // Cache'e ekle
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(mola1Dakika));
+                _cache.Set(cacheKey, remainingSeconds, cacheEntryOptions);
             }
 
-            // Eğer mola1 başlatılmadıysa, başlat
-            if (_mola1StartTime == null)
+            // Süreyi azalt ve güncelle
+            if (remainingSeconds > 0)
             {
-                _mola1StartTime = DateTime.Now;
+                remainingSeconds--;
+                _cache.Set(cacheKey, remainingSeconds); // Cache'i güncelle
             }
-
-            var lastOturum = _context.Oturums.LastOrDefault();
-            // Mola1 süresi dakika cinsinden tutuluyor
-            var mola1Dakika = lastOturum.Mola1; // Eğer Mola1 null ise, 0 olarak kabul et
-            var mola1Suresi = TimeSpan.FromMinutes(mola1Dakika);
-
-            // Geçen süreyi hesapla
-            var elapsed = DateTime.Now - _mola1StartTime.Value;
-            var remainingTime = mola1Suresi - elapsed;
-
-            // Eğer süre bittiyse, 0 döndür
-            var remainingSeconds = Math.Max(remainingTime.TotalSeconds, 0);
 
             return Ok(new { remainingTime = remainingSeconds });
         }
@@ -68,28 +64,39 @@ namespace Quiz.WebUI.Controllers
         [HttpGet("Mola2Getir")]
         public async Task<IActionResult> Mola2Getir()
         {
-            var session = await _context.QuizSessions.FirstOrDefaultAsync();
-            if (session == null)
+            const string cacheKey = "Mola2RemainingSeconds";
+
+            // Cache'ten kalan süreyi al
+            if (!_cache.TryGetValue(cacheKey, out int? remainingSeconds))
             {
-                return NotFound();
+                var session = await _context.QuizSessions.FirstOrDefaultAsync();
+                if (session == null)
+                {
+                    return NotFound();
+                }
+
+                var lastOturum = _context.Oturums.OrderByDescending(a => a.Id).FirstOrDefault();
+                if (lastOturum == null)
+                {
+                    return NotFound();
+                }
+
+                // Eğer mola süresi henüz ayarlanmamışsa
+                var mola2Dakika = lastOturum.Mola2; // Null ise 0 kabul et
+                remainingSeconds = mola2Dakika * 60;
+
+                // Cache'e ekle
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(mola2Dakika));
+                _cache.Set(cacheKey, remainingSeconds, cacheEntryOptions);
             }
 
-            // Eğer mola2 başlatılmadıysa, başlat
-            if (_mola2StartTime == null)
+            // Süreyi azalt ve güncelle
+            if (remainingSeconds > 0)
             {
-                _mola2StartTime = DateTime.Now;
+                remainingSeconds--;
+                _cache.Set(cacheKey, remainingSeconds); // Cache'i güncelle
             }
-            var lastOturum = _context.Oturums.LastOrDefault();
-            // Mola2 süresi dakika cinsinden tutuluyor
-            var mola2Dakika = lastOturum.Mola2; // Eğer Mola2 null ise, 0 olarak kabul et
-            var mola2Suresi = TimeSpan.FromMinutes(mola2Dakika);
-
-            // Geçen süreyi hesapla
-            var elapsed = DateTime.Now - _mola2StartTime.Value;
-            var remainingTime = mola2Suresi - elapsed;
-
-            // Eğer süre bittiyse, 0 döndür
-            var remainingSeconds = Math.Max(remainingTime.TotalSeconds, 0);
 
             return Ok(new { remainingTime = remainingSeconds });
         }
