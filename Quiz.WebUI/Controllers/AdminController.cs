@@ -144,8 +144,8 @@ namespace Quiz.WebUI.Controllers
                 Token = Guid.NewGuid().ToString(),
                 Munite =oturumModel.minute,
                 Status = 1,
-                Mola1=oturumModel.Mola1,
-                Mola2=oturumModel.Mola2,
+                Mola1=oturumModel.Mola1*60,
+                Mola2=oturumModel.Mola2*60,
             };
             _quizContext.Oturums.Add(oturum);
             _quizContext.SaveChanges();
